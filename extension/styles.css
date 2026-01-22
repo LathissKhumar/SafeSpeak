@@ -1,0 +1,60 @@
+/* SafeSpeak Overlay Styles */
+.safespeak-overlay {
+    position: absolute;
+    z-index: 10000;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    pointer-events: none; /* Let clicks pass through initially */
+    transition: opacity 0.3s;
+    opacity: 0;
+}
+
+.safespeak-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.safespeak-mild {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.safespeak-toxic {
+    background-color: #ffd700; /* Orange-ish Gold */
+    border: 1px solid #d39e00;
+    color: #856404;
+}
+
+.safespeak-severe {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.safespeak-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+}
+
+.safespeak-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.safespeak-btn-rewrite {
+    background-color: #28a745;
+    color: white;
+}
+
+.safespeak-btn-dismiss {
+    background-color: #6c757d;
+    color: white;
+}
