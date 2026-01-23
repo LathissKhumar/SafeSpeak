@@ -10,6 +10,10 @@ class MessageRewriter:
             self.tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-small")
             self.model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-small")
             print("Rewriter Model Loaded.")
+        except Exception as e:
+            print(f"Error loading Rewriter model: {e}")
+            self.tokenizer = None
+            self.model = None
 
     def rewrite_message(self, text: str) -> str:
         """
