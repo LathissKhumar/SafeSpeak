@@ -18,7 +18,7 @@ SafeSpeak is an end-to-end AI safety system designed to detect and mitigate toxi
     *   The analyzer returns a JSON object with label, severity, confidence, and explanation.
 
 3.  **Decision Phase**
-    *   **Decision Engine (`decision_engine.py`)** evaluates the analysis result against safety rules:
+    *   **Decision Engine (`decision_engine.py`)** evaluates the analysis result against safety rules: 
         *   **0-19**: Allow.
         *   **20-39**: Warn.
         *   **40-70**: Block & Rewrite.
