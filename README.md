@@ -9,9 +9,9 @@ SafeSpeak is an AI-powered system designed to detect cyberbullying and toxic lan
 
 ## Architecture
 The system consists of:
-*   **Backend**: FastAPI + PyTorch + Transformers (RoBERTa & T5).
+*   **Backend**: FastAPI + Hugging Face Inference API (RoBERTa & T5).
 *   **Frontend**: Chrome Extension for real-time browser protection.
-*   **Deployment**: Cloud-ready via Procfile.
+*   **Deployment**: Cloud-ready via Procfile (Extremely lightweight).
 
 For detailed design, see [safespeak/architecture.md](safespeak/architecture.md).
 
@@ -19,9 +19,9 @@ For detailed design, see [safespeak/architecture.md](safespeak/architecture.md).
 ```
 safespeak/
 ├── backend/
-│   ├── analyzer.py          # Toxicity detection (RoBERTa)
+│   ├── analyzer.py          # Toxicity detection (HF API)
 │   ├── decision_engine.py   # Rules & Escalation logic
-│   ├── rewriter.py          # Message rewriting (Flan-T5)
+│   ├── rewriter.py          # Message rewriting (HF API)
 │   ├── main.py              # FastAPI application
 │   ├── Procfile             # Deployment configuration
 │   └── requirements.txt
@@ -36,13 +36,17 @@ safespeak/
 
 ## Setup & Running
 
+### Prerequisites
+*   **Hugging Face API Token**: You need a free token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+
 ### Option 1: Deploy to Cloud (Render/Railway/Heroku)
 This project is configured for cloud deployment using a `Procfile`.
 1.  **Push to GitHub**.
 2.  **Connect to Render/Railway**.
 3.  **Root Directory**: Set the "Root Directory" in your deployment settings to `safespeak/backend`.
-4.  **Build Command**: `pip install -r requirements.txt`
-5.  **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT` (or let the platform detect the Procfile).
+4.  **Environment Variables**: Add `HF_API_KEY` with your token.
+5.  **Build Command**: `pip install -r requirements.txt`
+6.  **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 ### Option 2: Run Locally (Python)
 1.  **Navigate to backend**:
@@ -58,7 +62,12 @@ This project is configured for cloud deployment using a `Procfile`.
     ```bash
     pip install -r requirements.txt
     ```
-4.  **Start server**:
+4.  **Set API Key**:
+    Create a `.env` file in `safespeak/backend/` and add:
+    ```
+    HF_API_KEY=your_token_here
+    ```
+5.  **Start server**:
     ```bash
     uvicorn main:app --reload
     ```

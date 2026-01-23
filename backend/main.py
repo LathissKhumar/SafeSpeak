@@ -52,6 +52,17 @@ class AnalysisResponse(BaseModel):
     rewrite: Optional[str] = None
     timestamp: str
 
+@app.get("/")
+async def root():
+    """
+    Health check endpoint.
+    """
+    return {
+        "status": "online",
+        "message": "SafeSpeak API is running.",
+        "version": "2.0.0"
+    }
+
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_message(request: AnalyzeRequest):
     """

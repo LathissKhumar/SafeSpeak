@@ -12,9 +12,9 @@ SafeSpeak is an end-to-end AI safety system designed to detect and mitigate toxi
 
 2.  **Analysis Phase (Backend)**
     *   **FastAPI (`main.py`)** receives the text.
-    *   **Toxicity Analyzer (`analyzer.py`)** processes the text using `s-nlp/roberta_toxicity_classifier`.
-        *   The model outputs probabilities for `toxic` vs `neutral`.
-        *   A **Severity Score (0-100)** is calculated based on model confidence and category (if available).
+    *   **Toxicity Analyzer (`analyzer.py`)** processes the text using **Hugging Face Inference API** (`s-nlp/roberta_toxicity_classifier`).
+        *   The backend sends a request to HF's servers for low-latency analysis.
+        *   A **Severity Score (0-100)** is calculated based on returned confidence scores.
     *   The analyzer returns a JSON object with label, severity, confidence, and explanation.
 
 3.  **Decision Phase**
@@ -27,7 +27,7 @@ SafeSpeak is an end-to-end AI safety system designed to detect and mitigate toxi
 
 4.  **Intervention Phase**
     *   If the action is `warn` or `block_and_rewrite`, the **Rewriter (`rewriter.py`)** is triggered.
-    *   **Google Flan-T5 (`google/flan-t5-base`)** generates a polite, child-safe alternative.
+    *   It calls the **Hugging Face Inference API** using `google/flan-t5-large` to generate a polite, child-safe alternative.
     *   The backend responds to the extension with the Action, Reason, and Rewrite suggestion.
 
 5.  **User Feedback (Frontend)**
@@ -49,4 +49,6 @@ SafeSpeak is an end-to-end AI safety system designed to detect and mitigate toxi
 
 ## Deployment
 *   **Backend**: Configured with `Procfile` for native deployment on platforms like Render, Railway, or Heroku.
+*   **Environment Variables**:
+    *   `HF_API_KEY`: Required for Hugging Face Inference API.
 *   **Frontend**: Distributed as a standard Chrome Extension (Manifest V3), adhering to modern browser security standards.

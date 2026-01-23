@@ -1,7 +1,7 @@
 // SafeSpeak Content Script
 
 let debounceTimer;
-const API_URL = "http://127.0.0.1:8000/analyze";
+const API_URL = "https://safespeak-zoec.onrender.com/analyze";
 
 // State
 let lastAnalysedText = "";
