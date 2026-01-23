@@ -1,9 +1,5 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-transformers
-datasets
-scikit-learn
-sentencepiece
-protobuf
 fastapi
 uvicorn
+huggingface_hub
+python-dotenv
+requests

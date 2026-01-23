@@ -1,39 +1,42 @@
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+import os
+from huggingface_hub import InferenceClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class MessageRewriter:
     def __init__(self):
         """
-        Initialize the rewriter with google/flan-t5-small.
+        Initialize the rewriter with Hugging Face Inference API (google/flan-t5-large).
+        We can use 'large' since it runs on the server!
         """
-        print("Loading Rewriter Model (google/flan-t5-small)...")
-        try:
-            self.tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-small")
-            self.model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-small")
-            print("Rewriter Model Loaded.")
-        except Exception as e:
-            print(f"Error loading Rewriter model: {e}")
-            self.tokenizer = None
-            self.model = None
+        print("Initializing Rewriter Logic for HF API (google/flan-t5-large)...")
+        token = os.getenv("HF_API_KEY")
+        self.client = InferenceClient(token=token)
+        self.model = "google/flan-t5-large"
+        print("Rewriter Configured.")
 
     def rewrite_message(self, text: str) -> str:
         """
-        Rewrites the input text to be polite and child-safe.
+        Rewrites the input text to be polite and child-safe using HF API.
         """
         if not text or not text.strip():
             return ""
 
-        # Construct the prompt as per requirements
+        # Construct the prompt
         input_text = f"Rewrite this politely for a child: {text}"
         
-        input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids
-        
-        # Generate the rewritten text
-        outputs = self.model.generate(
-            input_ids, 
-            max_length=128, 
-            num_beams=5, 
-            early_stopping=True
-        )
-        
-        rewritten_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return rewritten_text
+        try:
+            # API Call
+            # text_generation returns a string directly if not detailed
+            response = self.client.text_generation(
+                input_text, 
+                model=self.model,
+                max_new_tokens=64,
+                temperature=0.7
+            )
+            # Response is the generated text
+            return response.strip()
+        except Exception as e:
+            print(f"Rewriting API Error: {e}")
+            return text # Fallback to original
