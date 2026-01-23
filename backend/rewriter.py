@@ -3,12 +3,13 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 class MessageRewriter:
     def __init__(self):
         """
-        Initialize the rewriter with google/flan-t5-base.
+        Initialize the rewriter with google/flan-t5-small.
         """
-        print("Loading Rewriter Model (google/flan-t5-base)...")
-        self.tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-base")
-        self.model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-base")
-        print("Rewriter Model Loaded.")
+        print("Loading Rewriter Model (google/flan-t5-small)...")
+        try:
+            self.tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-small")
+            self.model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-small")
+            print("Rewriter Model Loaded.")
 
     def rewrite_message(self, text: str) -> str:
         """
