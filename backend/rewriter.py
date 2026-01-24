@@ -17,11 +17,11 @@ class MessageRewriter:
 
         print("Initializing Rewriter Logic with Google Gemini (gemini-2.0-flash)...")
         genai.configure(api_key=api_key)
-        
+        # Configure the model
         # Configure the model
         self.model = genai.GenerativeModel(
             model_name="gemini-flash-latest",
-            system_instruction="You are a helpful assistant that rewrites toxic or rude messages into polite, kind, and constructive versions. Keep the meaning but remove the toxicity. Output ONLY the rewritten text."
+            system_instruction="You are a text transformation engine. Your task is to rewrite inputs to be polite and objective. Remove insults but keep the core message. Do not be conversational."
         )
         print("Rewriter Configured.")
 
@@ -35,17 +35,29 @@ class MessageRewriter:
         try:
             # Generate content
             response = self.model.generate_content(
-                f"Rewrite this to be polite: '{text}'",
+                f"Objectively rewrite this text to be polite. Maintain the original meaning. Text: {text}",
                 generation_config=genai.types.GenerationConfig(
                     candidate_count=1,
                     max_output_tokens=100,
-                    temperature=0.3
-                )
+                    temperature=0.1
+                ),
+                safety_settings={
+                    genai.types.HarmCategory.HARM_CATEGORY_HARASSMENT: genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    genai.types.HarmCategory.HARM_CATEGORY_HATE_SPEECH: genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: genai.types.HarmBlockThreshold.BLOCK_NONE,
+                    genai.types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: genai.types.HarmBlockThreshold.BLOCK_NONE,
+                }
             )
             
             rewritten = response.text.strip()
             
-            # Clean up potential quotes if the model adds them
+            # Clean up common model prefixes
+            prefixes = ["Rewritten:", "Polite version:", "Output:", "Input:"]
+            for p in prefixes:
+                if rewritten.lower().startswith(p.lower()):
+                    rewritten = rewritten[len(p):].strip()
+            
+            # Clean up quotes
             if rewritten.startswith('"') and rewritten.endswith('"'):
                 rewritten = rewritten[1:-1]
             
