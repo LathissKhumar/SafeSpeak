@@ -12,7 +12,7 @@ class MessageRewriter:
         Model: google/flan-t5-base (flan-t5-large returned 410 Gone)
         """
         print("Initializing Rewriter Logic for HF API (google/flan-t5-base)...")
-        self.api_url = "https://api-inference.huggingface.co/models/google/flan-t5-base"
+        self.api_url = "https://router.huggingface.co/models/google/flan-t5-base"
         self.headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
         print("Rewriter Configured.")
 
