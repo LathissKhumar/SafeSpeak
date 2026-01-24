@@ -9,10 +9,10 @@ class MessageRewriter:
         """
         Initialize the rewriter. 
         Using direct HTTP requests for maximum stability.
-        Model: google/flan-t5-large
+        Model: google/flan-t5-base (flan-t5-large returned 410 Gone)
         """
-        print("Initializing Rewriter Logic for HF API (google/flan-t5-large)...")
-        self.api_url = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+        print("Initializing Rewriter Logic for HF API (google/flan-t5-base)...")
+        self.api_url = "https://api-inference.huggingface.co/models/google/flan-t5-base"
         self.headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
         print("Rewriter Configured.")
 
@@ -33,8 +33,13 @@ class MessageRewriter:
                 "parameters": {"max_new_tokens": 64, "temperature": 0.2}
             }
             
-            response = requests.post(self.api_url, headers=self.headers, json=payload, timeout=5)
-            response.raise_for_status() # Raise error for 4xx/5xx
+            # Increased timeout for "Model Loading" (Cold Start)
+            response = requests.post(self.api_url, headers=self.headers, json=payload, timeout=15)
+            
+            if response.status_code != 200:
+                print(f"API Error Status: {response.status_code}")
+                print(f"API Error Body: {response.text}")
+                response.raise_for_status()
             
             response_json = response.json()
             
@@ -53,5 +58,5 @@ class MessageRewriter:
             return rewritten
 
         except Exception as e:
-            print(f"Rewriting API Error: {e}")
+            print(f"Rewriting Exception: {e}")
             return "I would prefer not to say that."
