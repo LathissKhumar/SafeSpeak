@@ -1,15 +1,22 @@
 /* SafeSpeak Overlay Styles */
 .safespeak-overlay {
-    position: absolute;
-    z-index: 10000;
+    position: fixed;
+    /* Fixed relative to viewport prevents scroll issues */
+    z-index: 2147483647;
+    /* Maximum Z-Index to stay on top of everything */
     padding: 10px;
     border-radius: 8px;
     font-family: Arial, sans-serif;
     font-size: 14px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    pointer-events: none; /* Let clicks pass through initially */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    /* Let clicks pass through initially */
     transition: opacity 0.3s;
     opacity: 0;
+    /* Move up by 100% of its own height to sit above the anchor point */
+    transform: translateY(-100%);
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    /* Shadow pointing up */
 }
 
 .safespeak-overlay.visible {
@@ -24,7 +31,8 @@
 }
 
 .safespeak-toxic {
-    background-color: #ffd700; /* Orange-ish Gold */
+    background-color: #ffd700;
+    /* Orange-ish Gold */
     border: 1px solid #d39e00;
     color: #856404;
 }
@@ -57,4 +65,30 @@
 .safespeak-btn-dismiss {
     background-color: #6c757d;
     color: white;
+}
+
+/* Arrow pointing down */
+.safespeak-overlay::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    /* At the bottom of the tooltip */
+    left: 20px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: #fff3cd transparent transparent transparent;
+    /* Default mild color */
+}
+
+/* Color specific arrows */
+.safespeak-overlay.safespeak-mild::after {
+    border-color: #ffeeba transparent transparent transparent;
+}
+
+.safespeak-overlay.safespeak-toxic::after {
+    border-color: #ffd700 transparent transparent transparent;
+}
+
+.safespeak-overlay.safespeak-severe::after {
+    border-color: #f8d7da transparent transparent transparent;
 }

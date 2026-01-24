@@ -6,6 +6,7 @@ const API_URL = "https://safespeak-zoec.onrender.com/analyze";
 // State
 let lastAnalysedText = "";
 let currentTooltip = null;
+let justBlocked = false; // Flag to prevent tooltip cleanup on auto-clear
 
 // Listen for input events
 document.addEventListener('input', (event) => {
@@ -25,8 +26,20 @@ document.addEventListener('input', (event) => {
 
 async function analyzeInput(target) {
     const text = getTextFromTarget(target);
-    if (!text || text.trim() === "" || text === lastAnalysedText) {
+
+    // Check if empty
+    if (!text || text.trim() === "") {
+        // If we just blocked it, consume the flag and DO NOT remove tooltip
+        if (justBlocked) {
+            justBlocked = false;
+            lastAnalysedText = ""; // Reset history so re-typing same thing works
+            return;
+        }
         removeTooltip();
+        return;
+    }
+
+    if (text === lastAnalysedText) {
         return;
     }
 
@@ -80,6 +93,12 @@ function handleDecision(target, data) {
         return;
     }
 
+    // BLOCKING LOGIC: Clear the input if it's severe
+    if (action === 'block_and_alert' || action === 'block_and_rewrite') {
+        justBlocked = true; // Prevent immediate cleanup
+        setTextToTarget(target, ""); // Clear the toxic message immediately
+    }
+
     // Create tooltip
     showTooltip(target, action, severity, rewrite, data.reason);
 }
@@ -97,27 +116,33 @@ function showTooltip(target, action, severity, rewrite, reason) {
     tooltip.classList.add(severityClass);
 
     let message = `<strong>SafeSpeak Alert:</strong> ${reason}`;
-
-    // Add logic handling
     let buttonsHtml = '';
 
-    if (action === 'block_and_alert') {
-        message += `<br><strong>Action:</strong> Message Blocked!`;
-        // In real app, we might disable the button or clear input
-    } else {
-        if (rewrite) {
-            message += `<br><em>Tip:</em> "${rewrite}"`;
-            buttonsHtml += `<button id="ss-btn-rewrite" class="safespeak-btn safespeak-btn-rewrite">Use Polite Version</button>`;
-        }
+    // If blocked, we state it clearly
+    if (action === 'block_and_alert' || action === 'block_and_rewrite') {
+        message += `<br><strong>Action:</strong> Message Cleared & Blocked.`;
+    }
+
+    // Always offer rewrite if available, even if blocked
+    if (rewrite) {
+        message += `<br><em>Suggestion:</em> "${rewrite}"`;
+        buttonsHtml += `<button id="ss-btn-rewrite" class="safespeak-btn safespeak-btn-rewrite">Paste Polite Version</button>`;
     }
 
     buttonsHtml += `<button id="ss-btn-dismiss" class="safespeak-btn safespeak-btn-dismiss">Dismiss</button>`;
 
     tooltip.innerHTML = `<div>${message}</div><div class="safespeak-actions">${buttonsHtml}</div>`;
 
-    // Positioning
-    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    // Positioning: Fixed relative to viewport
+    // rect.top is the top edge of the input box.
+    // We subtract 15px to give it a gap.
+    // CSS translateY(-100%) moves it up by its own height.
+    // Result: The bottom of the tooltip is 15px above the input.
+    tooltip.style.top = `${rect.top - 15}px`;
+    tooltip.style.left = `${rect.left}px`;
+
+    // Add a class for "above" styling
+    tooltip.classList.add('safespeak-above');
 
     document.body.appendChild(tooltip);
     currentTooltip = tooltip;
