@@ -8,12 +8,12 @@ class MessageRewriter:
     def __init__(self):
         """
         Initialize the rewriter with Hugging Face Inference API.
-        Using mistralai/Mistral-7B-Instruct-v0.3 for intelligent rewriting.
+        Using google/flan-t5-large for Balance of Speed & Intelligence.
         """
-        print("Initializing Rewriter Logic for HF API (mistralai/Mistral-7B-Instruct-v0.3)...")
+        print("Initializing Rewriter Logic for HF API (google/flan-t5-large)...")
         token = os.getenv("HF_API_KEY")
         self.client = InferenceClient(token=token)
-        self.model = "mistralai/Mistral-7B-Instruct-v0.3"
+        self.model = "google/flan-t5-large"
         print("Rewriter Configured.")
 
     def rewrite_message(self, text: str) -> str:
@@ -23,8 +23,8 @@ class MessageRewriter:
         if not text or not text.strip():
             return ""
 
-        # Construct the prompt using Mistral [INST] format
-        prompt = f"[INST] Rewrite the following Toxic message into a Polite, Child-Safe version. Output ONLY the polite sentence.\n\nToxic: \"{text}\"\nPolite: [/INST]"
+        # Construct the prompt - T5 works best with standard instructions
+        prompt = f"Rewrite this text to be polite, kind, and safe for children: {text}"
         
         try:
             # API Call
@@ -32,7 +32,7 @@ class MessageRewriter:
                 prompt, 
                 model=self.model,
                 max_new_tokens=64,
-                temperature=0.3,
+                temperature=0.2, # Low temp for consistency
                 return_full_text=False
             )
             # Response is the generated text
