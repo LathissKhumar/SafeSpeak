@@ -27,16 +27,21 @@ class MessageRewriter:
         prompt = f"Rewrite this text to be polite, kind, and safe for children: {text}"
         
         try:
-            # API Call
-            response = self.client.text_generation(
-                prompt, 
-                model=self.model,
-                max_new_tokens=64,
-                temperature=0.2, # Low temp for consistency
-                return_full_text=False
+            # API Call - Using raw POST to avoid "Task not supported" errors with T5 (Seq2Seq)
+            # T5 returns a list: [{'generated_text': '...'}]
+            response_json = self.client.post(
+                json={"inputs": prompt, "parameters": {"max_new_tokens": 64, "temperature": 0.2}}, 
+                model=self.model
             )
-            # Response is the generated text
-            rewritten = response.strip()
+            
+            # Response handling
+            # T5 API usually returns: [{'generated_text': 'The Rewrite'}]
+            if isinstance(response_json, list) and len(response_json) > 0:
+                rewritten = response_json[0].get("generated_text", "")
+            else:
+                rewritten = str(response_json)
+                
+            rewritten = rewritten.strip()
             
             return rewritten
 
