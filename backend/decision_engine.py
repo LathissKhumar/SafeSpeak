@@ -21,6 +21,13 @@ def decide_action(analysis_result: dict, user_id: str = "anonymous") -> dict:
     action = "allow"
     reason = "Safe message."
     
+    # 0. Handle API Errors
+    if analysis_result.get("label") == "error":
+        return {
+            "action": "block_and_alert",
+            "reason": "System Error: Unable to analyze toxicity (Check API Key)."
+        }
+
     # 1. Base Logic
     if severity < 20:
         action = "allow"

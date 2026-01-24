@@ -46,6 +46,7 @@ async function analyzeInput(target) {
     lastAnalysedText = text;
 
     try {
+        console.log("SafeSpeak: Analyzing text...", text);
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -55,6 +56,7 @@ async function analyzeInput(target) {
         });
 
         const data = await response.json();
+        console.log("SafeSpeak: API Response", data);
         handleDecision(target, data);
 
     } catch (error) {
@@ -146,6 +148,7 @@ function showTooltip(target, action, severity, rewrite, reason) {
 
     document.body.appendChild(tooltip);
     currentTooltip = tooltip;
+    console.log("SafeSpeak: Tooltip appended to body at", tooltip.style.top, tooltip.style.left);
 
     // Event Listeners
     const btnRewrite = document.getElementById('ss-btn-rewrite');

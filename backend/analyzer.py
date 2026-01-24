@@ -35,7 +35,7 @@ class ToxicityAnalyzer:
             scores = self.client.text_classification(text, model=self.model_id)
             # scores is a list of dicts: [{'label': 'neutral', 'score': 0.9}, ...]
         except Exception as e:
-            print(f"API Error: {e}")
+            print(f"!!! HF ANALYZER API ERROR !!!: {e}")
             # Fail gracefully
             return {
                 "label": "error",
