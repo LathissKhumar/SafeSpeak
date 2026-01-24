@@ -1,67 +1,56 @@
 import os
-import requests
+import google.generativeai as genai
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 class MessageRewriter:
     def __init__(self):
         """
-        Initialize the rewriter. 
-        Using direct HTTP requests for maximum stability.
-        Model: google/flan-t5-base (flan-t5-large returned 410 Gone)
+        Initializes the MessageRewriter using Google Gemini API.
+        Model: gemini-1.5-flash (Fast, Free Tier compatible)
         """
-        print("Initializing Rewriter Logic for HF API (facebook/bart-large-cnn)...")
-        self.api_url = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
-        self.headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            print("CRITICAL: GEMINI_API_KEY not found in environment!")
+            return
+
+        print("Initializing Rewriter Logic with Google Gemini (gemini-2.0-flash)...")
+        genai.configure(api_key=api_key)
+        
+        # Configure the model
+        self.model = genai.GenerativeModel(
+            model_name="gemini-flash-latest",
+            system_instruction="You are a helpful assistant that rewrites toxic or rude messages into polite, kind, and constructive versions. Keep the meaning but remove the toxicity. Output ONLY the rewritten text."
+        )
         print("Rewriter Configured.")
 
     def rewrite_message(self, text: str) -> str:
         """
-        Rewrites the input text using direct API call.
+        Rewrites the input text using Google Gemini.
         """
         if not text or not text.strip():
             return ""
 
-        # Construct the prompt (BART is a summarizer, so we frame it as a task)
-        prompt = f"Rewrite to be polite: {text}"
-        
         try:
-            # Raw HTTP Request
-            payload = {
-                "inputs": prompt,
-                "parameters": {"max_new_tokens": 64, "temperature": 0.2, "do_sample": True}
-            }
+            # Generate content
+            response = self.model.generate_content(
+                f"Rewrite this to be polite: '{text}'",
+                generation_config=genai.types.GenerationConfig(
+                    candidate_count=1,
+                    max_output_tokens=100,
+                    temperature=0.3
+                )
+            )
             
-            # Increased timeout for "Model Loading" (Cold Start)
-            response = requests.post(self.api_url, headers=self.headers, json=payload, timeout=30)
+            rewritten = response.text.strip()
             
-            if response.status_code != 200:
-                print(f"API Error Status: {response.status_code}")
-                # print(f"API Error Body: {response.text}")
-                response.raise_for_status()
+            # Clean up potential quotes if the model adds them
+            if rewritten.startswith('"') and rewritten.endswith('"'):
+                rewritten = rewritten[1:-1]
             
-            response_json = response.json()
-            
-            # BART Summarization format: [{'summary_text': '...'}]
-            if isinstance(response_json, list) and len(response_json) > 0:
-                # Check for 'summary_text' (BART) or 'generated_text' (T5/GPT)
-                rewritten = response_json[0].get("summary_text") or response_json[0].get("generated_text", "")
-            else:
-                rewritten = str(response_json)
-                
-            rewritten = rewritten.strip()
-            
-            # Remove the prompt if it was echoed back (common in some models)
-            if rewritten.startswith(prompt):
-                rewritten = rewritten[len(prompt):].strip()
-
-            # Safety checks
-            if rewritten.lower() == text.lower() or "stupid" in rewritten.lower():
-                return "I do not agree with that."
-                
             return rewritten
 
         except Exception as e:
-            print(f"!!! HF REWRITER API ERROR !!!: {e}")
+            print(f"Gemini API Error: {e}")
             return "I would prefer not to say that."
