@@ -1,7 +1,7 @@
 // SafeSpeak Content Script
 
 let debounceTimer;
-const API_URL = "https://safespeak-zoec.onrender.com/analyze";
+const API_URL = "http://localhost:10000/analyze";
 
 // State
 let lastAnalysedText = "";
@@ -75,12 +75,32 @@ function getTextFromTarget(target) {
 
 function setTextToTarget(target, newText) {
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        target.value = newText;
+        // React and other frameworks overload the value setter.
+        const prototype = Object.getPrototypeOf(target);
+        const nativeValueSetter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set;
+
+        if (nativeValueSetter) {
+            nativeValueSetter.call(target, newText);
+        } else {
+            target.value = newText;
+        }
+
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+
     } else if (target.isContentEditable) {
-        target.innerText = newText;
+        // WhatsApp and modern editors require user-like interaction
+        target.focus();
+
+        // If we want to replace text, we should select all first
+        document.execCommand('selectAll', false, null);
+
+        if (newText === "") {
+            document.execCommand('delete', false, null);
+        } else {
+            document.execCommand('insertText', false, newText);
+        }
     }
-    // Trigger input event to notify site scripts (like React/Vue handlers)
-    target.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function handleDecision(target, data) {

@@ -1,6 +1,8 @@
 fastapi
-uvicorn
+uvicorn[standard]
+pydantic-settings
+google-genai
 huggingface_hub
-google-generativeai
 python-dotenv
 requests
+httpx

@@ -27,7 +27,11 @@
                 "<all_urls>"
             ],
             "js": [
-                "content.js"
+                "src/adapters/BaseAdapter.js",
+                "src/adapters/DefaultAdapter.js",
+                "src/adapters/WhatsAppAdapter.js",
+                "src/ui/TooltipManager.js",
+                "src/content.js"
             ],
             "css": [
                 "styles.css"
